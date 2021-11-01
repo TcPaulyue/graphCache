@@ -30,7 +30,7 @@ public class GraphRuntimeWiring {
     }
     public void addNewSchemaDataFetcher(MongoTemplate mongoTemplate, GraphNode graphNode) {
 
-        //orderDocument ==>  documentDataFetcher
+        //queryDocument ==>  documentDataFetcher
         DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(mongoTemplate);
         documentDataFetcher.setDocumentCollectionName(graphNode.getName());
         this.addNewEntryInQueryDataFetcher(graphNode.getName(), documentDataFetcher);
@@ -42,6 +42,5 @@ public class GraphRuntimeWiring {
     private String lowerCase(String str){
         return str.substring(0,1).toLowerCase() + str.substring(1);
     }
-
 
 }

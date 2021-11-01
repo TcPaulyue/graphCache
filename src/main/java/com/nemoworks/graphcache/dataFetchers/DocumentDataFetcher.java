@@ -41,6 +41,7 @@ public class DocumentDataFetcher implements DataFetcher<JSONObject> {
     }
 
     private JSONObject getDocumentByAggregation(String id){
+        JSONObject jsonObject = mongoTemplate.findById(id, JSONObject.class);
         String MONGODB_ID = "_id";
         List<AggregationOperation> operations = Lists.newArrayList();
         operations.add(Aggregation.match(Criteria.where(MONGODB_ID).is(id)));

@@ -1,10 +1,10 @@
 package com.nemoworks.graphcache.graph;
 
-import graphql.language.Definition;
-import graphql.language.ObjectTypeDefinition;
-import graphql.language.Type;
+import graphql.language.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GraphNode {
@@ -15,12 +15,15 @@ public class GraphNode {
 
     private Definition definition;
 
-    private Map<String, Type> typeMap = new HashMap<>();
+    private Map<String, Type> typeMap;
 
-    public GraphNode(String name, Definition definition, Map<String, Type> typeMap) {
+    private List<String> children;
+
+    public GraphNode(String name, Definition definition, Map<String, Type> typeMap,List<String> children) {
         this.name = name;
         this.definition = definition;
         this.typeMap = typeMap;
+        this.children = children;
     }
 
     public String getId() {
@@ -55,21 +58,37 @@ public class GraphNode {
         this.typeMap = typeMap;
     }
 
+    public List<String> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<String> children) {
+        this.children = children;
+    }
+
     public static final class Builder{
         private String name;
         private Definition definition;
         private Map<String, Type> typeMap = new HashMap<>();
-
+        private List<String> children = new ArrayList<>();
         public Builder(ObjectTypeDefinition definition){
             this.name = definition.getName();
             this.definition = definition;
             definition.getFieldDefinitions().forEach(fieldDefinition -> {
                 typeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                if(!Scalars.getScalars().contains(((TypeName) fieldDefinition.getType()).getName())){
+                    if(fieldDefinition.getType() instanceof ListType) {
+                        if (!Scalars.getScalars().contains(((ListType) fieldDefinition.getType()).getType().toString())) {
+                            children.add(((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName());
+                        }
+                    }
+                    else children.add(((TypeName)fieldDefinition.getType()).getName());
+                }
             });
         }
 
         public GraphNode build(){
-            return new GraphNode(name,definition,typeMap);
+            return new GraphNode(name,definition,typeMap,children);
         }
 
         public String getName() {

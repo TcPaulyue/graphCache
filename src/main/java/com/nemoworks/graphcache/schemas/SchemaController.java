@@ -1,7 +1,10 @@
 package com.nemoworks.graphcache.schemas;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.nemoworks.graphcache.graph.GraphNode;
-import com.nemoworks.graphcache.parser.SchemaParser;
+import com.nemoworks.graphcache.parser.DSLParser;
+import com.nemoworks.graphcache.parser.JsonSchemaParseStrategy;
 import graphql.GraphQL;
 import graphql.language.Definition;
 import graphql.language.ObjectTypeDefinition;
@@ -41,23 +44,30 @@ public class SchemaController {
     public GraphQL createGraphQL(){
         graphTypeRegistry.initSchemaDefinition();
         graphRuntimeWiring.initRuntimeWiring();
-        String s = "type User {\n" +
-                "    id: String\n" +
-                "    name: String\n" +
-                "    age: Int\n" +
-                "    nationality: String\n" +
-                "    createdAt: String\n" +
-                "    friends: [User]\n" +
-                "    articles: [Article]\n" +
-                "}\n" +
-                "\n" +
-                "type Article {\n" +
-                "   id: String\n" +
-                "   title: String\n" +
-                "   minutesRead: Int\n" +
+//        String s =
+//                "type Article {\n" +
+//                "   id: String\n" +
+//                "   title: String\n" +
+//                "   minutesRead: Int\n" +
+//                "}";
+        String s = "{\n" +
+                "  \"type\": \"object\",\n" +
+                "  \"title\": \"Customer\",\n" +
+                "  \"properties\": {\n" +
+                "    \"title\": {\n" +
+                "      \"type\": \"string\",\n" +
+                "      \"description\": \"Collection\",\n" +
+                "      \"filter\": true\n" +
+                "    },\n" +
+                "    \"CustomerID\": {\n" +
+                "      \"type\": \"string\",\n" +
+                "      \"filter\": true\n" +
+                "    }" +
+                "   }" +
                 "}";
-        List<Definition> parse = SchemaParser.parse(s);
-        GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(1)).build();
+        List<Definition> parse = DSLParser.parseSchema(s);
+      //  GraphInstance.merge(parse);
+        GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
         this.addNewTypeAndDataFetcherInGraphQL(node);
         graphTypeRegistry.buildTypeRegistry();
         this.graphQLSchema = schemaGenerator.makeExecutableSchema(graphTypeRegistry.getTypeDefinitionRegistry()
@@ -66,7 +76,8 @@ public class SchemaController {
     }
 
     public GraphQL addTypeInGraphQL(String schema){
-        List<Definition> parse = SchemaParser.parse(schema);
+        List<Definition> parse = DSLParser.parseSchema(schema);
+        //GraphInstance.merge(parse);
         GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
         this.addNewTypeAndDataFetcherInGraphQL(node);
         graphTypeRegistry.buildTypeRegistry();
@@ -74,6 +85,7 @@ public class SchemaController {
                 , graphRuntimeWiring.getRuntimeWiring());
         return  newGraphQL(graphQLSchema).build();
     }
+
 
     private void addNewTypeAndDataFetcherInGraphQL(GraphNode graphNode){
         graphTypeRegistry.addGraphNode(graphNode);

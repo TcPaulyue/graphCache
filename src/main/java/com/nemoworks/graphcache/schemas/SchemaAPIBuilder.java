@@ -1,7 +1,8 @@
 package com.nemoworks.graphcache.schemas;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
@@ -12,7 +13,7 @@ import java.util.Properties;
 
 public class SchemaAPIBuilder {
 
-    private static Properties props = new Properties();
+    private static final Properties props = new Properties();
     static {
         props.setProperty(Velocity.INPUT_ENCODING, "UTF-8");
         props.setProperty(Velocity.RESOURCE_LOADER, "class");
@@ -22,7 +23,9 @@ public class SchemaAPIBuilder {
 
     private static final VelocityEngine velocityEngine = new VelocityEngine(props);
 
-    public static final JSONObject build(String schema){
+    private static final Gson gson = new Gson();
+
+    public static final JsonObject build(String schema){
         int loc = schema.indexOf('{');
         String schemaType = schema.substring(5,loc-1);
         String template = "{\n" +
@@ -44,7 +47,7 @@ public class SchemaAPIBuilder {
         context.put("name",schemaType);
         StringWriter writer = new StringWriter();
         velocityEngine.evaluate(context, writer, "", template);
-        return JSON.parseObject(writer.toString());
+        return gson.fromJson(writer.toString(),JsonObject.class);
     }
 
 //

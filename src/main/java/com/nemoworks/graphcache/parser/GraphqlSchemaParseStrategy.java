@@ -6,12 +6,17 @@ import graphql.parser.Parser;
 
 import java.util.List;
 
-public class SchemaParser {
+public class GraphqlSchemaParseStrategy implements ParseStrategy {
     private static final Parser parser = new Parser();
 
-    public static List<Definition> parse(String schema){
+    public List<Definition> parse(String schema){
         Document document = parser.parseDocument(schema);
         return document.getDefinitions();
+    }
+
+    @Override
+    public boolean isValid(String schema) {
+        return false;
     }
 
 

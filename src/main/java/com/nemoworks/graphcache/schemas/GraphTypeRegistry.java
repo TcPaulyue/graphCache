@@ -23,6 +23,7 @@ public class GraphTypeRegistry {
     private GraphTypeRegistry() {
         this.typeDefinitionRegistry = new TypeDefinitionRegistry();
     }
+
     TypeDefinitionRegistry getTypeDefinitionRegistry() {
         return typeDefinitionRegistry;
     }
@@ -73,7 +74,8 @@ public class GraphTypeRegistry {
     }
 
     void addFieldDefinitionsInQueryType(String name, Type type, List<InputValueDefinition> inputValueDefinitions) {
-        FieldDefinition definition = FieldDefinition.newFieldDefinition().inputValueDefinitions(inputValueDefinitions).name(name).type(type).build();
+        FieldDefinition definition = FieldDefinition.newFieldDefinition().inputValueDefinitions(inputValueDefinitions)
+                .name(name).type(type).build();
         fieldDefinitionListInQuery.add(definition);
     }
 
