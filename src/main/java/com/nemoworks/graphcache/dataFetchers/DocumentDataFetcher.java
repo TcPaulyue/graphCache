@@ -1,59 +1,136 @@
 package com.nemoworks.graphcache.dataFetchers;
 
 import com.alibaba.fastjson.JSONObject;
-import graphql.com.google.common.collect.Lists;
+import com.nemoworks.graphcache.graph.GraphInstance;
+import com.nemoworks.graphcache.util.VelocityTemplate;
+import graphql.language.Type;
+import graphql.language.TypeName;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.query.Criteria;
+import graphql.schema.GraphQLObjectType;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class DocumentDataFetcher implements DataFetcher<JSONObject> {
 
-    private final MongoTemplate mongoTemplate;
-    private String documentCollectionName;
-    private String keyNameInParent;
+    private Statement statement;
 
-    public DocumentDataFetcher(MongoTemplate mongoTemplate){
-        this.mongoTemplate = mongoTemplate;
-    }
-    public void setDocumentCollectionName(String documentCollectionName){
-        this.documentCollectionName = documentCollectionName;
-    }
-    public void setKeyNameInParent(String keyNameInParent) {
-        this.keyNameInParent = keyNameInParent;
+    public DocumentDataFetcher(Connection connection){
+        try {
+            statement = connection.createStatement();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
+
+    private static String QUERYTEMPLATE = "SELECT * FROM ${graphNode} WHERE id = ${id};";
     @Override
     public JSONObject get(DataFetchingEnvironment dataFetchingEnvironment) {
-        String id = String.valueOf(dataFetchingEnvironment.getArguments().get("id"));
-        if(id.equals("null")){
-            JSONObject jsonObject = dataFetchingEnvironment.getSource();
-            id = jsonObject.getString(keyNameInParent);
+        String fieldType = ((GraphQLObjectType) dataFetchingEnvironment.getFieldType()).getName();
+        String id = dataFetchingEnvironment.getArgument("id");
+        Map<String,String> map = new HashMap<>();
+        map.put("id",id);
+        map.put("graphNode",fieldType.toUpperCase());
+        String s = VelocityTemplate.build(QUERYTEMPLATE, map);
+        ResultSet rs = null;
+        Map<String, Type> typeMap = GraphInstance.graphNodeMap.get(fieldType).getTypeMap();
+        JSONObject jsonObject = new JSONObject();
+        try {
+            rs = statement.executeQuery(s);
+
+            while ( rs.next() ) {
+                for(String key:typeMap.keySet()){
+                    if(((TypeName)typeMap.get(key)).getName().equals("Int")){
+                        int anInt = rs.getInt(key);
+                        jsonObject.put(key,anInt);
+                    }else if(((TypeName)typeMap.get(key)).getName().equals("String")){
+                        jsonObject.put(key,rs.getString(key));
+                    }
+                }
+            }
+            statement.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-        return this.getDocumentByAggregation(id);
+        return jsonObject;
+       // return this.getDocumentByAggregation(String.valueOf(id));
     }
 
     private JSONObject getDocumentByAggregation(String id){
-        JSONObject jsonObject = mongoTemplate.findById(id, JSONObject.class);
-        String MONGODB_ID = "_id";
-        List<AggregationOperation> operations = Lists.newArrayList();
-        operations.add(Aggregation.match(Criteria.where(MONGODB_ID).is(id)));
-        ProjectionOperation projectionOperation = Aggregation.project("data");
-        operations.add(projectionOperation);
-        Aggregation aggregation = Aggregation.newAggregation(operations);
-        List<JSONObject> documents = mongoTemplate.aggregate(aggregation, "articles", JSONObject.class).getMappedResults();
-//        JSONObject results = documents.get(0).getJSONObject("data");
-//        results.put("id",documents.get(0).getString("_id"));
-        JSONObject results = new JSONObject();
-        results.put("title","Java 8 Lambdas");
-        results.put("minutesRead",8);
-        return results;
+        return null;
     }
-}
+
+
+    public static void main(String args[]) {
+        Connection c = null;
+        try {
+             c= DriverManager
+                    .getConnection("jdbc:postgresql://127.0.0.1:5432/postgres",
+                            "postgres", "123456");
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(c);
+        documentDataFetcher.get(null);
+    }
+//        Connection c = null;
+//        Statement stmt = null;
+//        try {
+//             c= DriverManager
+//                    .getConnection("jdbc:postgresql://127.0.0.1:5432/postgres",
+//                            "postgres", "123456");
+//            System.out.println("Opened database successfully");
+//            stmt = c.createStatement();
+//            String sql = "CREATE TABLE COMPANY " +
+//                    "(ID INT PRIMARY KEY     NOT NULL," +
+//                    " NAME           TEXT    NOT NULL, " +
+//                    " AGE            INT     NOT NULL, " +
+//                    " ADDRESS        CHAR(50), " +
+//                    " SALARY         REAL)";
+//            stmt.executeUpdate(sql);
+//            String sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+//                    + "VALUES (1, 'Paul', 32, 'California', 20000.00 );";
+//            stmt.executeUpdate(sql);
+//
+//            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+//                    + "VALUES (2, 'Allen', 25, 'Texas', 15000.00 );";
+//            stmt.executeUpdate(sql);
+//
+//            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+//                    + "VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );";
+//            stmt.executeUpdate(sql);
+//
+//            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+//                    + "VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 );";
+//            stmt.executeUpdate(sql);
+//            ResultSet rs = stmt.executeQuery( "SELECT * FROM COMPANY WHERE id = 4;" );
+//            while ( rs.next() ) {
+//                int id = rs.getInt("id");
+//                String  name = rs.getString("name");
+//                int age  = rs.getInt("age");
+//                String  address = rs.getString("address");
+//                float salary = rs.getFloat("salary");
+//                System.out.println( "ID = " + id );
+//                System.out.println( "NAME = " + name );
+//                System.out.println( "AGE = " + age );
+//                System.out.println( "ADDRESS = " + address );
+//                System.out.println( "SALARY = " + salary );
+//                System.out.println();
+//            }
+//            stmt.close();
+//            c.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.err.println(e.getClass().getName()+": "+e.getMessage());
+//            System.exit(0);
+//        }
+//        System.out.println("Table created successfully");
+
+    }

@@ -8,12 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
+import java.sql.Connection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 public class GraphRuntimeWiring {
     private RuntimeWiring runtimeWiring;
+
+    @Autowired
+    Connection connection;
 
     @Autowired
     public GraphRuntimeWiring(){
@@ -31,8 +35,7 @@ public class GraphRuntimeWiring {
     public void addNewSchemaDataFetcher(MongoTemplate mongoTemplate, GraphNode graphNode) {
 
         //queryDocument ==>  documentDataFetcher
-        DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(mongoTemplate);
-        documentDataFetcher.setDocumentCollectionName(graphNode.getName());
+        DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(connection);
         this.addNewEntryInQueryDataFetcher(graphNode.getName(), documentDataFetcher);
     }
 

@@ -1,0 +1,21 @@
+{
+  "type":"object",
+  "title": "Company",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "age": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "salary": {
+      "type": "integer"
+    }
+  }
+}

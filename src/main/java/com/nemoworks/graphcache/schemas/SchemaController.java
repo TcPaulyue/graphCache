@@ -2,6 +2,7 @@ package com.nemoworks.graphcache.schemas;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.nemoworks.graphcache.graph.GraphInstance;
 import com.nemoworks.graphcache.graph.GraphNode;
 import com.nemoworks.graphcache.parser.DSLParser;
 import com.nemoworks.graphcache.parser.JsonSchemaParseStrategy;
@@ -51,23 +52,29 @@ public class SchemaController {
 //                "   minutesRead: Int\n" +
 //                "}";
         String s = "{\n" +
-                "  \"type\": \"object\",\n" +
-                "  \"title\": \"Customer\",\n" +
+                "  \"type\":\"object\",\n" +
+                "  \"title\": \"Company\",\n" +
                 "  \"properties\": {\n" +
-                "    \"title\": {\n" +
-                "      \"type\": \"string\",\n" +
-                "      \"description\": \"Collection\",\n" +
-                "      \"filter\": true\n" +
+                "    \"id\": {\n" +
+                "      \"type\": \"integer\"\n" +
                 "    },\n" +
-                "    \"CustomerID\": {\n" +
-                "      \"type\": \"string\",\n" +
-                "      \"filter\": true\n" +
-                "    }" +
-                "   }" +
+                "    \"name\": {\n" +
+                "      \"type\": \"string\"\n" +
+                "    },\n" +
+                "    \"age\": {\n" +
+                "      \"type\": \"integer\"\n" +
+                "    },\n" +
+                "    \"address\": {\n" +
+                "      \"type\": \"string\"\n" +
+                "    },\n" +
+                "    \"salary\": {\n" +
+                "      \"type\": \"integer\"\n" +
+                "    }\n" +
+                "  }\n" +
                 "}";
         List<Definition> parse = DSLParser.parseSchema(s);
-      //  GraphInstance.merge(parse);
         GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
+        GraphInstance.merge(node);
         this.addNewTypeAndDataFetcherInGraphQL(node);
         graphTypeRegistry.buildTypeRegistry();
         this.graphQLSchema = schemaGenerator.makeExecutableSchema(graphTypeRegistry.getTypeDefinitionRegistry()
