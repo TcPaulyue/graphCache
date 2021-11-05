@@ -43,33 +43,33 @@ public class SchemaController {
     public GraphQL createGraphQL(){
         graphTypeRegistry.initSchemaDefinition();
         graphRuntimeWiring.initRuntimeWiring();
-//        String s =
-//                "type Article {\n" +
-//                "   id: String\n" +
-//                "   title: String\n" +
-//                "   minutesRead: Int\n" +
-//                "}";
-        String s = "{\n" +
-                "  \"type\":\"object\",\n" +
-                "  \"title\": \"Company\",\n" +
-                "  \"properties\": {\n" +
-                "    \"id\": {\n" +
-                "      \"type\": \"integer\"\n" +
-                "    },\n" +
-                "    \"name\": {\n" +
-                "      \"type\": \"string\"\n" +
-                "    },\n" +
-                "    \"age\": {\n" +
-                "      \"type\": \"integer\"\n" +
-                "    },\n" +
-                "    \"address\": {\n" +
-                "      \"type\": \"string\"\n" +
-                "    },\n" +
-                "    \"salary\": {\n" +
-                "      \"type\": \"integer\"\n" +
-                "    }\n" +
-                "  }\n" +
+        String s =
+                "type Article {\n" +
+                "   id: String\n" +
+                "   title: String\n" +
+                "   minutesRead: Int\n" +
                 "}";
+//        String s = "{\n" +
+//                "  \"type\":\"object\",\n" +
+//                "  \"title\": \"Company\",\n" +
+//                "  \"properties\": {\n" +
+//                "    \"id\": {\n" +
+//                "      \"type\": \"integer\"\n" +
+//                "    },\n" +
+//                "    \"name\": {\n" +
+//                "      \"type\": \"string\"\n" +
+//                "    },\n" +
+//                "    \"age\": {\n" +
+//                "      \"type\": \"integer\"\n" +
+//                "    },\n" +
+//                "    \"address\": {\n" +
+//                "      \"type\": \"string\"\n" +
+//                "    },\n" +
+//                "    \"salary\": {\n" +
+//                "      \"type\": \"integer\"\n" +
+//                "    }\n" +
+//                "  }\n" +
+//                "}";
         List<Definition> parse = DSLParser.parseSchema(s);
         GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
         GraphInstance.merge(node);

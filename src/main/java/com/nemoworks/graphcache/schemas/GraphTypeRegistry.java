@@ -1,6 +1,8 @@
 package com.nemoworks.graphcache.schemas;
 
 import com.nemoworks.graphcache.graph.GraphNode;
+import com.nemoworks.graphcache.util.GQLTemplate;
+import com.nemoworks.graphcache.util.StringUtil;
 import graphql.language.*;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,9 @@ public class GraphTypeRegistry {
             this.addTypeDefinition(graphNode.getName(), graphNode.getTypeMap());
 
             this.addDocumentTypeInQuery(graphNode.getName());
+
+            this.addDocumentListTypeInQuery(graphNode.getName());
+
         }
     }
 
@@ -61,16 +66,14 @@ public class GraphTypeRegistry {
         List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
         inputValueDefinitions.add(new InputValueDefinition("id",new TypeName("String")));
         //orderDocument(id:String):OrderDocument
-        this.addFieldDefinitionsInQueryType(lowerCase(name)
-                ,new TypeName(upperCase(name))
+        this.addFieldDefinitionsInQueryType(GQLTemplate.querySingleInstance(name)
+                ,new TypeName(name)
                 ,inputValueDefinitions);
     }
-    private String upperCase(String str) {
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
-    }
 
-    private String lowerCase(String str){
-        return str.substring(0,1).toLowerCase() + str.substring(1);
+    private void addDocumentListTypeInQuery(String name){
+        this.addFieldDefinitionsInQueryType(GQLTemplate.queryInstanceList(name),new ListType(new TypeName(name)),
+                new ArrayList<>());
     }
 
     void addFieldDefinitionsInQueryType(String name, Type type, List<InputValueDefinition> inputValueDefinitions) {

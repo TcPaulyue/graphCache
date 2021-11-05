@@ -1,4 +1,4 @@
-package com.nemoworks.graphcache.dataFetchers;
+package com.nemoworks.graphcache.dataFetchers.relational;
 
 import com.alibaba.fastjson.JSONObject;
 import com.nemoworks.graphcache.graph.GraphInstance;

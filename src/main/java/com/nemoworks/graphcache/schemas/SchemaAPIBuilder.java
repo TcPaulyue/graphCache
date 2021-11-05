@@ -25,7 +25,7 @@ public class SchemaAPIBuilder {
 
     private static final Gson gson = new Gson();
 
-    public static final JsonObject build(String schema){
+    public static JsonObject build(String schema){
         int loc = schema.indexOf('{');
         String schemaType = schema.substring(5,loc-1);
         String template = "{\n" +
