@@ -1,11 +1,10 @@
 package com.nemoworks.graphcache.schemas;
 
-import com.nemoworks.graphcache.dataFetchers.DocumentDataFetcher;
+import com.nemoworks.graphcache.dataFetchers.RelationalDataFetcher;
 import com.nemoworks.graphcache.graph.GraphNode;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.RuntimeWiring;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -32,11 +31,11 @@ public class GraphRuntimeWiring {
         Map<String, DataFetcher> map = new LinkedHashMap<>();
         runtimeWiring.getDataFetchers().put("Query",map);
     }
-    public void addNewSchemaDataFetcher(MongoTemplate mongoTemplate, GraphNode graphNode) {
+    public void addNewSchemaDataFetcher(GraphNode graphNode) {
 
         //queryDocument ==>  documentDataFetcher
-        DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(connection);
-        this.addNewEntryInQueryDataFetcher(graphNode.getName(), documentDataFetcher);
+        RelationalDataFetcher relationalDataFetcher = new RelationalDataFetcher(connection);
+        this.addNewEntryInQueryDataFetcher(graphNode.getName(), relationalDataFetcher);
     }
 
     void addNewEntryInQueryDataFetcher(String name, DataFetcher dataFetcher){

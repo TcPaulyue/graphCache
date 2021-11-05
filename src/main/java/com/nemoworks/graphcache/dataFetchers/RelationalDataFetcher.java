@@ -15,11 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DocumentDataFetcher implements DataFetcher<JSONObject> {
+public class RelationalDataFetcher implements DataFetcher<JSONObject> {
 
     private Statement statement;
 
-    public DocumentDataFetcher(Connection connection){
+    public RelationalDataFetcher(Connection connection){
         try {
             statement = connection.createStatement();
         } catch (SQLException throwables) {
@@ -28,21 +28,25 @@ public class DocumentDataFetcher implements DataFetcher<JSONObject> {
     }
 
 
-    private static String QUERYTEMPLATE = "SELECT * FROM ${graphNode} WHERE id = ${id};";
+    private static String QUERY_TEMPLATE = "SELECT * FROM ${graphNode} WHERE id = ${id};";
+
     @Override
     public JSONObject get(DataFetchingEnvironment dataFetchingEnvironment) {
         String fieldType = ((GraphQLObjectType) dataFetchingEnvironment.getFieldType()).getName();
+
         String id = dataFetchingEnvironment.getArgument("id");
+
         Map<String,String> map = new HashMap<>();
         map.put("id",id);
         map.put("graphNode",fieldType.toUpperCase());
-        String s = VelocityTemplate.build(QUERYTEMPLATE, map);
+
+        String s = VelocityTemplate.build(QUERY_TEMPLATE, map);
+
         ResultSet rs = null;
         Map<String, Type> typeMap = GraphInstance.graphNodeMap.get(fieldType).getTypeMap();
         JSONObject jsonObject = new JSONObject();
         try {
             rs = statement.executeQuery(s);
-
             while ( rs.next() ) {
                 for(String key:typeMap.keySet()){
                     if(((TypeName)typeMap.get(key)).getName().equals("Int")){
@@ -77,8 +81,8 @@ public class DocumentDataFetcher implements DataFetcher<JSONObject> {
             throwables.printStackTrace();
         }
 
-        DocumentDataFetcher documentDataFetcher = new DocumentDataFetcher(c);
-        documentDataFetcher.get(null);
+        RelationalDataFetcher relationalDataFetcher = new RelationalDataFetcher(c);
+        relationalDataFetcher.get(null);
     }
 //        Connection c = null;
 //        Statement stmt = null;

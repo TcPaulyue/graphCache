@@ -31,8 +31,6 @@ public class SchemaController {
 
     private final SchemaGenerator schemaGenerator;
 
-    @Autowired
-    MongoTemplate mongoTemplate;
 
     public SchemaController(GraphRuntimeWiring graphRuntimeWiring, GraphTypeRegistry graphTypeRegistry) {
         this.graphRuntimeWiring = graphRuntimeWiring;
@@ -96,6 +94,6 @@ public class SchemaController {
 
     private void addNewTypeAndDataFetcherInGraphQL(GraphNode graphNode){
         graphTypeRegistry.addGraphNode(graphNode);
-        graphRuntimeWiring.addNewSchemaDataFetcher(mongoTemplate,graphNode);
+        graphRuntimeWiring.addNewSchemaDataFetcher(graphNode);
     }
 }
