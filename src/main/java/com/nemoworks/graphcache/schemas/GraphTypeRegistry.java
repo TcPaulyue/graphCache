@@ -58,6 +58,8 @@ public class GraphTypeRegistry {
 
             this.addDocumentListTypeInQuery(graphNode.getName());
 
+            this.addCreateNodeInstanceInQuery(graphNode.getName(),graphNode.getInputTypeMap());
+
         }
     }
 
@@ -74,6 +76,32 @@ public class GraphTypeRegistry {
     private void addDocumentListTypeInQuery(String name){
         this.addFieldDefinitionsInQueryType(GQLTemplate.queryInstanceList(name),new ListType(new TypeName(name)),
                 new ArrayList<>());
+    }
+
+    private void addCreateNodeInstanceInQuery(String name,Map<String,Type> typeMap){
+        List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+        typeMap.forEach((key, value) -> inputValueDefinitions.add(new InputValueDefinition(key, value)));
+        InputObjectTypeDefinition inputObjectTypeDefinition = InputObjectTypeDefinition.newInputObjectDefinition()
+                .name(GQLTemplate.inputTypeForNodeInstance(name))
+                .inputValueDefinitions(inputValueDefinitions).build();
+        typeDefinitionRegistry.add(inputObjectTypeDefinition);
+
+        List<InputValueDefinition> inputValueDefinition = new ArrayList<>();
+        inputValueDefinition.add(new InputValueDefinition("data",new TypeName(GQLTemplate.inputTypeForNodeInstance(name))));
+
+        this.addFieldDefinitionsInQueryType(GQLTemplate.createNodeInstance(name)
+                ,new TypeName(name)
+                ,inputValueDefinition);
+    }
+
+
+    void addInputObjectTypeDefinition(String name, Map<String, Type> typeMap) {
+
+        List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+        typeMap.forEach((key, value) -> inputValueDefinitions.add(new InputValueDefinition(key, value)));
+        InputObjectTypeDefinition inputObjectTypeDefinition = InputObjectTypeDefinition.newInputObjectDefinition().name(name)
+                .inputValueDefinitions(inputValueDefinitions).build();
+        typeDefinitionRegistry.add(inputObjectTypeDefinition);
     }
 
     void addFieldDefinitionsInQueryType(String name, Type type, List<InputValueDefinition> inputValueDefinitions) {

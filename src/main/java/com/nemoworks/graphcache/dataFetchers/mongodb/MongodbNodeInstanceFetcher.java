@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class MongodbNodeInstanceFetcher implements DataFetcher<JSONObject>, NodeInstanceFetcher {
     private final MongoTemplate mongoTemplate;
 
-    private static final String collectionName = "articles";
+    private static final String collectionName = "users";
 
     @Autowired
     public MongodbNodeInstanceFetcher(MongoTemplate mongoTemplate) {
@@ -31,6 +31,7 @@ public class MongodbNodeInstanceFetcher implements DataFetcher<JSONObject>, Node
 
     @Override
     public JSONObject queryNodeInstanceById(String id, String nodeType) {
-        return mongoTemplate.findById(id, JSONObject.class, collectionName);
+        JSONObject result = mongoTemplate.findById(id, JSONObject.class, collectionName);
+        return result;
     }
 }

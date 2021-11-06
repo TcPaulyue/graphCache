@@ -1,5 +1,6 @@
 package com.nemoworks.graphcache.graph;
 
+import com.nemoworks.graphcache.util.GQLTemplate;
 import graphql.language.*;
 
 import java.util.ArrayList;
@@ -17,14 +18,29 @@ public class GraphNode {
 
     private Map<String, Type> typeMap;
 
+    private Map<String,Type> inputTypeMap;
+
+    private Map<String,Type> linkedTypeMap;
+
     private List<String> children;
 
-    public GraphNode(String name, Definition definition, Map<String, Type> typeMap,List<String> children) {
+    public GraphNode(String name, Definition definition, Map<String, Type> typeMap, Map<String, Type> inputTypeMap, Map<String, Type> linkedTypeMap, List<String> children) {
         this.name = name;
         this.definition = definition;
         this.typeMap = typeMap;
+        this.inputTypeMap = inputTypeMap;
+        this.linkedTypeMap = linkedTypeMap;
         this.children = children;
     }
+
+    public Map<String, Type> getLinkedTypeMap() {
+        return linkedTypeMap;
+    }
+
+    public void setLinkedTypeMap(Map<String, Type> linkedTypeMap) {
+        this.linkedTypeMap = linkedTypeMap;
+    }
+
 
     public String getId() {
         return id;
@@ -58,6 +74,16 @@ public class GraphNode {
         this.typeMap = typeMap;
     }
 
+
+    public Map<String, Type> getInputTypeMap() {
+        return inputTypeMap;
+    }
+
+    public void setInputTypeMap(Map<String, Type> inputTypeMap) {
+        this.inputTypeMap = inputTypeMap;
+    }
+
+
     public List<String> getChildren() {
         return children;
     }
@@ -70,25 +96,43 @@ public class GraphNode {
         private String name;
         private Definition definition;
         private Map<String, Type> typeMap = new HashMap<>();
+
+        private Map<String,Type> inputTypeMap = new HashMap<>();
+
+        private Map<String,Type> linkedTypeMap = new HashMap<>();
+
         private List<String> children = new ArrayList<>();
+
         public Builder(ObjectTypeDefinition definition){
             this.name = definition.getName();
             this.definition = definition;
             definition.getFieldDefinitions().forEach(fieldDefinition -> {
                 typeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
-                if(!Scalars.getScalars().contains(((TypeName) fieldDefinition.getType()).getName())){
-                    if(fieldDefinition.getType() instanceof ListType) {
-                        if (!Scalars.getScalars().contains(((ListType) fieldDefinition.getType()).getType().toString())) {
-                            children.add(((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName());
-                        }
+                if(fieldDefinition.getType() instanceof ListType) {
+                    if (!Scalars.getScalars().contains(((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName())) {
+                        String typeName = ((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName();
+                        children.add(typeName);
+                        inputTypeMap.put(fieldDefinition.getName(),new ListType(new TypeName(GQLTemplate.inputTypeForNodeInstance(typeName))));
+                        linkedTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                    }else{
+                        inputTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
                     }
-                    else children.add(((TypeName)fieldDefinition.getType()).getName());
                 }
+                else{
+                    if(!Scalars.getScalars().contains(((TypeName) fieldDefinition.getType()).getName())){
+                        children.add(((TypeName)fieldDefinition.getType()).getName());
+                        inputTypeMap.put(fieldDefinition.getName(),new TypeName(GQLTemplate.inputTypeForNodeInstance(((TypeName) fieldDefinition.getType()).getName())));
+                        linkedTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                    }else{
+                        inputTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                    }
+                }
+
             });
         }
 
         public GraphNode build(){
-            return new GraphNode(name,definition,typeMap,children);
+            return new GraphNode(name,definition,typeMap, inputTypeMap, linkedTypeMap, children);
         }
 
         public String getName() {
