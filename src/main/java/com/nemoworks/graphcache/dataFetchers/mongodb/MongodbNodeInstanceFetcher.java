@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class MongodbNodeInstanceFetcher implements DataFetcher<JSONObject>, NodeInstanceFetcher {
     private final MongoTemplate mongoTemplate;
 
-    private static final String collectionName = "users";
+    private static final String collectionName = "articles";
 
     @Autowired
     public MongodbNodeInstanceFetcher(MongoTemplate mongoTemplate) {

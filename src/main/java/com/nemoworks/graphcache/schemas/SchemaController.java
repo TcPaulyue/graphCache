@@ -1,5 +1,6 @@
 package com.nemoworks.graphcache.schemas;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.nemoworks.graphcache.graph.GraphInstance;
@@ -31,6 +32,8 @@ public class SchemaController {
 
     private final SchemaGenerator schemaGenerator;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public SchemaController(GraphRuntimeWiring graphRuntimeWiring, GraphTypeRegistry graphTypeRegistry) {
         this.graphRuntimeWiring = graphRuntimeWiring;
@@ -39,20 +42,18 @@ public class SchemaController {
     }
 
 
-    @PostConstruct
+    //@PostConstruct
     public GraphQL createGraphQL(){
         graphTypeRegistry.initSchemaDefinition();
         graphRuntimeWiring.initRuntimeWiring();
-        String s =
-                "type Article {\n" +
-                "   id: String\n" +
-                "   title: String\n" +
-                "   minutesRead: Int\n" +
-                "}";
-        List<Definition> parse = DSLParser.parseSchema(s);
-        GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
-        GraphInstance.merge(node);
-        this.addNewTypeAndDataFetcherInGraphQL(node);
+        List<JSONObject> graphNodes = mongoTemplate.findAll(JSONObject.class, "graphNode");
+        graphNodes.forEach(graphNode->{
+            String schema = graphNode.getString("schemaDefinition");
+            List<Definition> parse = DSLParser.parseSchema(schema);
+            GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
+            GraphInstance.merge(node);
+            this.addNewTypeAndDataFetcherInGraphQL(node);
+        });
         graphTypeRegistry.buildTypeRegistry();
         this.graphQLSchema = schemaGenerator.makeExecutableSchema(graphTypeRegistry.getTypeDefinitionRegistry()
                 , graphRuntimeWiring.getRuntimeWiring());
@@ -62,6 +63,7 @@ public class SchemaController {
     public GraphQL addTypeInGraphQL(String schema){
         List<Definition> parse = DSLParser.parseSchema(schema);
         //GraphInstance.merge(parse);
+        this.addTypeInDB(schema);
         GraphNode node = new GraphNode.Builder((ObjectTypeDefinition) parse.get(0)).build();
         this.addNewTypeAndDataFetcherInGraphQL(node);
         graphTypeRegistry.buildTypeRegistry();
@@ -74,5 +76,11 @@ public class SchemaController {
     private void addNewTypeAndDataFetcherInGraphQL(GraphNode graphNode){
         graphTypeRegistry.addGraphNode(graphNode);
         graphRuntimeWiring.addNewSchemaDataFetcher(graphNode);
+    }
+
+    private void addTypeInDB(String schema){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("schemaDefinition",schema);
+        mongoTemplate.insert(jsonObject,"graphNode");
     }
 }

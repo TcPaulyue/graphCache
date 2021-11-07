@@ -112,19 +112,23 @@ public class GraphNode {
                     if (!Scalars.getScalars().contains(((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName())) {
                         String typeName = ((TypeName) ((ListType) fieldDefinition.getType()).getType()).getName();
                         children.add(typeName);
-                        inputTypeMap.put(fieldDefinition.getName(),new ListType(new TypeName(GQLTemplate.inputTypeForNodeInstance(typeName))));
+                        //inputTypeMap.put(fieldDefinition.getName(),new ListType(new TypeName(GQLTemplate.inputTypeForNodeInstance(typeName))));
+                        inputTypeMap.put(fieldDefinition.getName(),new ListType(new TypeName("String")));
                         linkedTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
                     }else{
                         inputTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                        //inputTypeMap.put(fieldDefinition.getName(),new TypeName("String"));
                     }
                 }
                 else{
                     if(!Scalars.getScalars().contains(((TypeName) fieldDefinition.getType()).getName())){
                         children.add(((TypeName)fieldDefinition.getType()).getName());
-                        inputTypeMap.put(fieldDefinition.getName(),new TypeName(GQLTemplate.inputTypeForNodeInstance(((TypeName) fieldDefinition.getType()).getName())));
+                        //inputTypeMap.put(fieldDefinition.getName(),new TypeName(GQLTemplate.inputTypeForNodeInstance(((TypeName) fieldDefinition.getType()).getName())));
+                        inputTypeMap.put(fieldDefinition.getName(),new ListType(new TypeName("String")));
                         linkedTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
                     }else{
                         inputTypeMap.put(fieldDefinition.getName(),fieldDefinition.getType());
+                        //inputTypeMap.put(fieldDefinition.getName(),new TypeName("String"));
                     }
                 }
 
