@@ -20,7 +20,7 @@ import java.util.List;
 public class MongodbNodeInstanceListFetcher implements DataFetcher<List<JSONObject>>, NodeInstanceListFetcher {
     private final MongoTemplate mongoTemplate;
 
-    private static final String collectionName = "articles";
+    private static final String collectionName = "jieshixing";
 
     @Autowired
     public MongodbNodeInstanceListFetcher(MongoTemplate mongoTemplate) {
@@ -44,7 +44,7 @@ public class MongodbNodeInstanceListFetcher implements DataFetcher<List<JSONObje
     @Override
     public List<JSONObject> queryNodeInstanceList(String nodeType) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").regex(nodeType));
+        query.addCriteria(Criteria.where("nodeType").is(nodeType));
         List<JSONObject> jsonObjects = mongoTemplate.find(query, JSONObject.class, collectionName);
         return jsonObjects;
     }
