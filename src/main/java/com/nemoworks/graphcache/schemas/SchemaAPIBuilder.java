@@ -1,8 +1,7 @@
 package com.nemoworks.graphcache.schemas;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
@@ -23,11 +22,9 @@ public class SchemaAPIBuilder {
 
     private static final VelocityEngine velocityEngine = new VelocityEngine(props);
 
-    private static final Gson gson = new Gson();
-
-    public static JsonObject build(String schema){
+    public static JSONObject build(String schema){
         int loc = schema.indexOf('{');
-        String schemaType = schema.substring(5,loc-1);
+        String schemaType = schema.substring(5,loc);
         String template = "{\n" +
                 "  \"schemaInfo\": {\n" +
                 "    \"name\": \"${name}\",\n" +
@@ -36,18 +33,20 @@ public class SchemaAPIBuilder {
                 "  },\n" +
                 "  \"apis\": {\n" +
                 "    \"query\": \"${schema}:(id:String){...}\",\n" +
+                "    \"querylist\": \"${querylist}{...}\",\n" +
                 "    \"create\": \"${createSchema}:(data){...}\",\n" +
                 "    \"update\": \"${updateSchema}:(data){...}\",\n" +
                 "    \"delete\": \"${deleteSchema}:(id:String){...}\"\n" +
                 "  }\n" +
                 "}";
         VelocityContext context = new VelocityContext();
-        context.put("schema",schemaType.toLowerCase());
-        context.put("createSchema","create"+schemaType);
+        context.put("schema","query_"+schemaType.toLowerCase());
+        context.put("createSchema","create_"+schemaType.toLowerCase());
+        context.put("querylist","query_"+schemaType.toLowerCase()+"_list");
         context.put("name",schemaType);
         StringWriter writer = new StringWriter();
         velocityEngine.evaluate(context, writer, "", template);
-        return gson.fromJson(writer.toString(),JsonObject.class);
+        return JSON.parseObject(writer.toString(), JSONObject.class);
     }
 
 //

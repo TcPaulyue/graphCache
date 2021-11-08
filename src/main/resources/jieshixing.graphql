@@ -1,3 +1,9 @@
+"销售人员"
+type SalesMan{
+    name:String
+}
+
+
 "毛利"
 type GrossProfit{
     fee:String
@@ -5,13 +11,7 @@ type GrossProfit{
     month:String
     amount:Int
     salers:[SalesMan]
-    type:String
     appendix:String
-}
-
-"销售人员"
-type SalesMan{
-    name:String
 }
 
 "保证金"
