@@ -2,7 +2,6 @@ package com.nemoworks.graphcache.schemas;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
@@ -49,23 +48,4 @@ public class SchemaAPIBuilder {
         velocityEngine.evaluate(context, writer, "", template);
         return gson.fromJson(writer.toString(),JsonObject.class);
     }
-
-//
-//    public static void main(String[] args) {
-//        SchemaAPIBuilder.build("type User {\n" +
-//                "  id: String\n" +
-//                "  name: String\n" +
-//                "  age: Int\n" +
-//                "  nationality: String\n" +
-//                "  createdAt: String\n" +
-//                "  friends: [User]\n" +
-//                "  articles: [Article]\n" +
-//                "}");
-//        SchemaAPIBuilder.build("\n" +
-//                "type Article {\n" +
-//                "   id: String\n" +
-//                "   title: String\n" +
-//                "   minutesRead: Int\n" +
-//                "}");
-//    }
 }

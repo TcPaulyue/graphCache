@@ -1,5 +1,8 @@
 package com.nemoworks.graphcache.schemas;
 
+import com.nemoworks.graphcache.dataFetchers.CoraNodeInstanceConstructor;
+import com.nemoworks.graphcache.dataFetchers.CoraNodeInstanceFetcher;
+import com.nemoworks.graphcache.dataFetchers.CoraNodeInstanceListFetcher;
 import com.nemoworks.graphcache.dataFetchers.NodeInstanceFetcher;
 import com.nemoworks.graphcache.dataFetchers.mongodb.MongodbNodeInstanceConstructor;
 import com.nemoworks.graphcache.dataFetchers.mongodb.MongodbNodeInstanceFetcher;
@@ -29,13 +32,13 @@ public class GraphRuntimeWiring {
     Connection connection;
 
     @Autowired
-    MongodbNodeInstanceFetcher mongodbNodeInstanceFetcher;
+    CoraNodeInstanceFetcher coraNodeInstanceFetcher;
 
     @Autowired
-    MongodbNodeInstanceListFetcher mongodbNodeInstanceListFetcher;
+    CoraNodeInstanceListFetcher coraNodeInstanceListFetcher;
 
     @Autowired
-    MongodbNodeInstanceConstructor mongodbNodeInstanceConstructor;
+    CoraNodeInstanceConstructor coraNodeInstanceConstructor;
 
     private static final String QUERY_IN_GRAPHQL = "Query";
 
@@ -60,20 +63,20 @@ public class GraphRuntimeWiring {
         //queryDocument ==>  documentDataFetcher
        // RelationalDataFetcher relationalDataFetcher = new RelationalDataFetcher(connection);
        // this.addNewEntryInQueryDataFetcher(graphNode.getName(), relationalDataFetcher);
-        this.addNewEntryInQueryDataFetcher(GQLTemplate.querySingleInstance(graphNode.getName()),mongodbNodeInstanceFetcher);
+        this.addNewEntryInQueryDataFetcher(GQLTemplate.querySingleInstance(graphNode.getName()),coraNodeInstanceFetcher);
 
-        this.addNewEntryInQueryDataFetcher(GQLTemplate.queryInstanceList(graphNode.getName()),mongodbNodeInstanceListFetcher);
+        this.addNewEntryInQueryDataFetcher(GQLTemplate.queryInstanceList(graphNode.getName()),coraNodeInstanceListFetcher);
 
-        this.addNewEntryInQueryDataFetcher(GQLTemplate.createNodeInstance(graphNode.getName()),mongodbNodeInstanceConstructor);
+        this.addNewEntryInQueryDataFetcher(GQLTemplate.createNodeInstance(graphNode.getName()),coraNodeInstanceConstructor);
 
         if(!graphNode.getLinkedTypeMap().isEmpty()){
             Map<String,DataFetcher> dataFetcherMap = new HashMap<>();
             graphNode.getLinkedTypeMap().keySet().forEach(field->{
                 Type nodeInstanceType = graphNode.getLinkedTypeMap().get(field);
                 if(nodeInstanceType instanceof ListType){
-                    dataFetcherMap.put(field,mongodbNodeInstanceListFetcher);
+                    dataFetcherMap.put(field,coraNodeInstanceListFetcher);
                 }else{
-                    dataFetcherMap.put(field,mongodbNodeInstanceFetcher);
+                    dataFetcherMap.put(field,coraNodeInstanceFetcher);
                 }
             });
             this.addDataFetchers(graphNode.getName(),dataFetcherMap);

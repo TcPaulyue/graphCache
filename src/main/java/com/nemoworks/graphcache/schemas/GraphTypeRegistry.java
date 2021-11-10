@@ -2,7 +2,6 @@ package com.nemoworks.graphcache.schemas;
 
 import com.nemoworks.graphcache.graph.GraphNode;
 import com.nemoworks.graphcache.util.GQLTemplate;
-import com.nemoworks.graphcache.util.StringUtil;
 import graphql.language.*;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +60,12 @@ public class GraphTypeRegistry {
             this.addCreateNodeInstanceInQuery(graphNode.getName(),graphNode.getInputTypeMap());
 
         }
+    }
+
+    public void addCustomAPIInQuery(String nodeType,String apiName){
+        this.addFieldDefinitionsInQueryType(apiName
+                ,new TypeName(nodeType)
+                ,new ArrayList<>());
     }
 
     //在GraphQL的Schema中的Query类中增加一个访问定义的对象的字段

@@ -3,13 +3,18 @@ package com.nemoworks.graphcache.schemas;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.nemoworks.graphcache.dataFetchers.CoraNodeInstanceConstructor;
+import com.nemoworks.graphcache.dataFetchers.CoraNodeInstanceFetcher;
+import com.nemoworks.graphcache.dataFetchers.NodeInstanceFetcher;
 import com.nemoworks.graphcache.graph.GraphInstance;
 import com.nemoworks.graphcache.graph.GraphNode;
+import com.nemoworks.graphcache.groovy.GroovyScriptService;
 import com.nemoworks.graphcache.parser.DSLParser;
 import com.nemoworks.graphcache.parser.JsonSchemaParseStrategy;
 import graphql.GraphQL;
 import graphql.language.Definition;
 import graphql.language.ObjectTypeDefinition;
+import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.SchemaGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +36,9 @@ public class SchemaController {
     private GraphQLSchema graphQLSchema;
 
     private final SchemaGenerator schemaGenerator;
+
+    @Autowired
+    GroovyScriptService groovyScriptService;
 
     @Autowired
     MongoTemplate mongoTemplate;
@@ -82,5 +90,17 @@ public class SchemaController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("schemaDefinition",schema);
         mongoTemplate.insert(jsonObject,"graphNode");
+    }
+
+    public GraphQL addCustomDataFetcherInGraphQL(String nodeType,String apiName,String script){
+        groovyScriptService.parseAndCache(nodeType,apiName,script);
+        NodeInstanceFetcher instance = groovyScriptService.getInstance(nodeType, apiName);
+        CoraNodeInstanceFetcher coraNodeInstanceFetcher = new CoraNodeInstanceFetcher(instance);
+        graphRuntimeWiring.addNewEntryInQueryDataFetcher(apiName,coraNodeInstanceFetcher);
+        graphTypeRegistry.addCustomAPIInQuery(nodeType,apiName);
+        graphTypeRegistry.buildTypeRegistry();
+        this.graphQLSchema = schemaGenerator.makeExecutableSchema(graphTypeRegistry.getTypeDefinitionRegistry()
+                , graphRuntimeWiring.getRuntimeWiring());
+        return  newGraphQL(graphQLSchema).build();
     }
 }

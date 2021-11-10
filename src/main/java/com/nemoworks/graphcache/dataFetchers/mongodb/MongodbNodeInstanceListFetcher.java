@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class MongodbNodeInstanceListFetcher implements DataFetcher<List<JSONObject>>, NodeInstanceListFetcher {
+public class MongodbNodeInstanceListFetcher implements NodeInstanceListFetcher {
     private final MongoTemplate mongoTemplate;
 
     private static final String collectionName = "jieshixing";
@@ -25,20 +25,6 @@ public class MongodbNodeInstanceListFetcher implements DataFetcher<List<JSONObje
     @Autowired
     public MongodbNodeInstanceListFetcher(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
-    }
-
-
-    @Override
-    public List<JSONObject> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-
-        String fieldType = ((GraphQLObjectType)((GraphQLList) dataFetchingEnvironment.getFieldType()).getWrappedType()).getName();
-        if(dataFetchingEnvironment.getSource()!=null){
-            String name = dataFetchingEnvironment.getFieldDefinition().getName();
-            JSONObject source = dataFetchingEnvironment.getSource();
-            ArrayList<String> ids = source.getObject(name, ArrayList.class);
-            return queryNodeInstanceList(ids);
-        }
-        return queryNodeInstanceList(fieldType);
     }
 
     @Override

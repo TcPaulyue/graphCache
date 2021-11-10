@@ -1,6 +1,5 @@
 package com.nemoworks.graphcache.graph;
 
-import com.nemoworks.graphcache.util.GQLTemplate;
 import graphql.language.*;
 
 import java.util.ArrayList;

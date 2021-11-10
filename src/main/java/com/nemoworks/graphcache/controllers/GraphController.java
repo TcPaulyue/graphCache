@@ -38,6 +38,11 @@ public class GraphController {
             this.graphQL = schemaController.addTypeInGraphQL(schema);
             return ResponseEntity.ok(SchemaAPIBuilder.build(schema));
         }else if(schema.startsWith("create")){
+            String s = "     System.out.println(\"queryNodeInstanceById\");\n" +
+                    "        JSONObject jsonObject = new JSONObject();\n" +
+                    "        jsonObject.put(\"name\",\"tcpaul\");\n" +
+                    "        return jsonObject;";
+            this.graphQL = schemaController.addCustomDataFetcherInGraphQL("SalesMan","querybyname",s);
             return ResponseEntity.ok("waiting...");
         }else{
             Parser parser = new Parser();
